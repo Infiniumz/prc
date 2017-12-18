@@ -1,0 +1,25 @@
+#include <time.h>
+#include <stdio.h>
+#include <string.h>
+
+int
+main(void)
+{
+    int y, m, d;
+    scanf ("%d %d %d", &y, &m, &d);
+    struct tm t;
+    memset (&t, 0, sizeof(t));
+    t.tm_year = y - 1900;
+    t.tm_mon = m - 1;
+    t.tm_mday = 1;
+    t.tm_isdst = -1;
+    mktime(&t);
+    while (t.tm_mon == m - 1) {
+        if (t.tm_wday == d) {
+            printf ("%d\n", t.tm_mday);
+        }
+        t.tm_mday++;
+        mktime(&t);
+    }
+    return 0;
+}
