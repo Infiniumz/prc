@@ -1,0 +1,34 @@
+#include <dirent.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <linux/limits.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <ctype.h>
+
+long long
+my_size (const char *path)
+{
+    DIR *d;
+    struct dirent *dd;
+    long long int sum = 0;
+    d = opendir(path);
+    if (d == 0) {
+        return 0;
+    }
+    while ((dd = readdir(d))) {
+        struct stat a;
+        char s[PATH_MAX];
+        snprintf(s, sizeof(s), "%s/%s", path, dd->d_name);
+        if ((stat(s, &a) >= 0) && S_ISREG(a.st_mode) && (getuid() == a.st_uid) && isupper(dd->d_name[0])) {
+            sum += a.st_size;
+        }
+    }
+    return sum;
+}
+int
+main (int argc, const char **argv)
+{
+    printf ("%lld", my_size(argv[1]));
+    return 0;
+}
