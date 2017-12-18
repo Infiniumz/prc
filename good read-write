@@ -1,0 +1,25 @@
+
+#include <unistd.h>
+
+enum
+{
+    BUF = 4096
+};
+
+void
+copy_file (int in_fd, int out_fd) {
+    char buff[BUF];
+    ssize_t read_bytes, written_bytes;
+    char *position = buff;
+    while ((read_bytes = read (in_fd, buff, sizeof(buff))) > 0) {
+        position = buff;
+        while (read_bytes > 0) {
+            written_bytes = write (out_fd, position, read_bytes);
+            if (written_bytes < 0) {
+                break;
+            }
+            position = position + written_bytes;
+            read_bytes = read_bytes - written_bytes;
+        }
+    }
+}
