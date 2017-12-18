@@ -1,0 +1,69 @@
+#include <unistd.h>
+#include <stdio.h>
+#include <signal.h>
+#include <wait.h>
+#include <stdlib.h>
+
+pid_t p = 0;
+int numb = 0;
+int n = 0;
+FILE *f1;
+FILE *f2;
+
+
+void
+handler(int sig)
+{
+    int tmp;
+    signal(SIGUSR1, handler);
+    if (fscanf (f1, "%d", &tmp) == EOF || tmp >= n || tmp == 0) {
+        fprintf(f2, "0\n");
+        fflush(f2);
+        fclose(f1);
+        fclose(f2);
+        kill(p, SIGUSR1);
+        _exit(0);
+    }
+    printf ("%d %d\n", numb, tmp);
+    fflush(stdout);
+    ++tmp;
+    fprintf (f2, "%d\n", tmp);
+    fflush(f2);
+    kill(p, SIGUSR1);
+    return;
+}
+
+int
+main(int argc, const char **argv)
+{
+    signal(SIGUSR1, handler);
+    int fd[2];
+    pipe(fd);
+    n = strtol(argv[1], NULL, 10);
+    if (!(p = fork())) {
+        numb = 2;
+        f1 = fdopen(fd[0], "r");
+        f2 = fdopen(fd[1], "w");
+        fscanf(f1, "%d", &p);
+        fprintf(f2, "1\n");
+        fflush(f2);
+        kill(p, SIGUSR1);
+        while(1) {
+            pause();
+        }
+    }
+    if (!fork()) {
+        numb = 1;
+        f1 = fdopen(fd[0], "r");
+        f2 = fdopen(fd[1], "w");
+        fprintf (f2, "%d\n", getpid());
+        fflush(f2);
+        while(1) {
+            pause();
+        }
+    }
+    wait(NULL);
+    wait(NULL);
+    printf ("Done\n");
+    return 0;
+}
