@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <wait.h>
+#include <fcntl.h>
+
+int
+main(int arg, char **argv)
+{
+    int n = strtol(argv[1], NULL, 10);
+    key_t key = strtol(argv[2], NULL, 10);
+    long maxval = strtol(argv[3], NULL, 10);
+    int sid = shmget(key, sizeof(maxval), IPC_CREAT | 0666);
+    volatile long *arr = shmat(sid, NULL, 0);
+    *arr = 0;
+    int smid = semget(key, n, IPC_CREAT | 0666);
+    struct sembuf po = {0, 1, SEM_UNDO};
+    semop(smid, &po, 1);
+    pid_t *parr = calloc(n, sizeof(*parr));
+    for (int i = 0; i < n; ++i) {
+        pid_t pid;
+        if (!(pid = fork())) {
+            while (1) {
+                struct sembuf p = {i, -1, SEM_UNDO};
+                semop(smid, &p, 1);
+                printf ("%d: %ld\n", i, *arr);
+                fflush(stdout);
+                ++(*arr);
+                if (*arr > maxval) {
+                    _exit(0);
+                }
+                struct sembuf v = {((*arr * *arr) % n), 1, SEM_UNDO};
+                semop(smid, &v, 1);
+            }
+        } else {
+            parr[i] = pid;
+        }
+    }
+    wait(NULL);
+    for (int i = 0; i < n; ++i) {
+        kill(parr[i], SIGTERM);
+    }
+    for (int i = 0; i < n; ++i) {
+        wait(NULL);
+    }
+    shmctl(sid, IPC_RMID, 0);
+    semctl(smid, n, IPC_RMID);
+    free(parr);
+    return 0;
+}
