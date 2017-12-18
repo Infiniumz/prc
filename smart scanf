@@ -1,0 +1,13 @@
+#include <stdio.h>
+
+int
+main(int argc, char **argv)
+{
+    unsigned a, b;
+    unsigned long sum = 0;
+    while (scanf("%x-%x%*[^\n]", &a, &b) != EOF) {
+        sum += b - a;
+    }
+    printf ("%lu\n", sum);
+    return 0;
+}
