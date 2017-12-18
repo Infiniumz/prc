@@ -1,0 +1,23 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int
+main(int argc, char** argv)
+{
+    if (argc < 5) {
+        return 0;
+    }
+    int count, low, high;
+    unsigned seed;
+    count = strtol(argv[1], NULL, 10);
+    low = strtol(argv[2], NULL, 10);
+    high = strtol(argv[3], NULL, 10);
+    seed = strtoul(argv[4], NULL, 10);
+    srand(seed);
+    int i;
+    for ( i = 0; i < count; ++i) {
+        printf("%d\n", (int)floor(rand()/(RAND_MAX + 1.0)*(high - low) + low));
+    }
+    return 0;
+}
