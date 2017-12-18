@@ -1,0 +1,43 @@
+/*  В аргументе командной строки задается имя текстового файла, который содержит временные отметки. Входной текстовый файл состоит не менее чем из одной строки текста. Каждая строка текста не превышает в длину 1000 символов и содержит одну временную отметку в формате:
+
+YYYY/MM/DD hh:mm:ss
+перед YYYY, между DD и hh и после ss может находиться произвольное число пробельных символов, большее 0. В остальном дата записывается точно в указанном формате.
+
+На стандартный поток вывода напечатайте последовательность целых чисел, представляющую собой интервалы в секундах между последовательными временными отметками во входном файле.
+
+Все временные отметки представимы 32-битным типом time_t. Интервалы также представимы знаковыми 32-битными числами.
+
+Учитывайте возможные переходы на летнее и зимнее время!  */
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+int
+main (int argc, const char **argv)
+{
+    FILE *file = fopen (argv[1], "r");
+    if (file == NULL) {
+        return 0;
+    }
+    time_t year, mon, day, hour, min, p, sec;
+    time_t nsec = 0;
+    int flag = 0;
+    struct tm time;
+    while (fscanf(file, "%ld/%ld/%ld%ld:%ld:%ld", &year, &mon, &day, &hour, &min, &sec) != EOF) {
+        p = nsec;
+        memset (&time, 0, sizeof(time));
+        time.tm_year = year - 1900;
+        time.tm_mon = mon - 1;
+        time.tm_mday = day;
+        time.tm_hour = hour;
+        time.tm_min = min;
+        time.tm_sec = sec;
+        time.tm_isdst = -1;
+        nsec = mktime (&time);
+        if (flag) {
+            printf ("%ld\n", nsec - p);
+        }
+        flag = 1;
+    }
+    return 0;
+}
