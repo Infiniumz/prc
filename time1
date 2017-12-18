@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <time.h>
+
+enum
+{
+    FYEAR = 1900,
+    DSECS = 86400
+};
+
+int
+main(int argc, const char** argv)
+{
+    time_t current = time(NULL);
+    time_t offs;
+    while (scanf("%ld", &offs) != EOF) {
+        if (__builtin_mul_overflow(offs, DSECS, &offs) || __builtin_add_overflow(offs, current, &offs)) {
+            printf ("OVERFLOW\n");
+        } else {
+            struct tm t;
+            localtime_r(&offs, &t);
+            printf ("%2d-%02d-%02d\n", t.tm_year + FYEAR, t.tm_mon + 1, t.tm_mday);         
+        }
+    }
+    return 0;
+}
