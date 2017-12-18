@@ -1,0 +1,21 @@
+void
+normalize_path(char *buf)
+{
+    char *str1 = buf;
+    char *str2 = buf;
+    int flag = 0;
+    while (*str2 != '\0') {
+        while (*str2 == '/') {
+            ++str2;
+            if (!flag) {
+                ++flag;
+                ++str1;
+            }
+        }
+        *str1 = *str2;
+        ++str2;
+        ++str1;
+        flag = 0;
+    }
+    *str1 = '\0';
+}
