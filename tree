@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+struct Node
+{
+    int32_t key;
+    int32_t left_idx;
+    int32_t right_idx;
+};
+
+void
+my_traverser (int fd, int32_t index, int flag)
+{
+    if (index | flag) {
+        struct Node b;
+        lseek (fd, index * sizeof(b), SEEK_SET);
+        if (read(fd, &b, sizeof(b)) < sizeof(b)) {
+            return;
+        }
+        my_traverser (fd, b.right_idx, 0);
+        printf ("%d ", b.key);
+        my_traverser (fd, b.left_idx, 0);
+    }
+    return;
+}
+
+int
+main (int argc, char **argv)
+{
+    if (argv[1] == NULL) {
+        return 0;
+    }
+    int fd = open (argv[1], O_RDONLY);
+    if (fd < 0) {
+        return 0;
+    }
+    my_traverser(fd, 0, 1);
+    printf ("\n");
+    return 0;
+}
