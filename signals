@@ -1,0 +1,29 @@
+#include <unistd.h>
+#include <stdio.h>
+#include <signal.h>
+
+int n = 0;
+
+void
+sg(int sig)
+{
+    signal(SIGINT, sg);
+    printf("%d\n", n);
+    fflush(stdout);
+    ++n;
+    if (n == 4) {
+        _exit(0);
+    }
+}
+
+int
+main(void)
+{
+    signal(SIGINT, sg);
+    printf ("%d\n", getpid());
+    fflush(stdout);
+    while (1) {
+        pause();
+    }
+    return 0;
+}
